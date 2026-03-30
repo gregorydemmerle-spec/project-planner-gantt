@@ -1,0 +1,122 @@
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+
+export default function ProjectPlanner() {
+  const [projects, setProjects] = useState([]);
+  const [name, setName] = useState("");
+  const [stage, setStage] = useState("avant");
+  const [resources, setResources] = useState("");
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+
+  const addProject = () => {
+    if (!name || !resources || !start || !end) return;
+    setProjects([...projects, { name, stage, resources, start, end }]);
+    setName("");
+    setResources("");
+    setStart("");
+    setEnd("");
+  };
+
+  const stages = {
+    avant: "Avant‑projet",
+    dev: "Développement",
+    post: "Post‑développement",
+  };
+
+  const getTimeline = () => {
+    if (projects.length === 0) return [];
+
+    const minDate = new Date(Math.min(...projects.map((p) => new Date(p.start))));
+    const maxDate = new Date(Math.max(...projects.map((p) => new Date(p.end))));
+
+    const timeline = [];
+    const current = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+
+    while (current <= maxDate) {
+      timeline.push(
+        current.toLocaleString("fr-FR", { month: "short", year: "numeric" })
+      );
+      current.setMonth(current.getMonth() + 1);
+    }
+
+    return timeline;
+  };
+
+  const timeline = getTimeline();
+
+  return (
+    <div className="planner">
+      <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        Planificateur de projets + GANTT
+      </motion.h1>
+
+      <div className="form">
+        <label>Nom du projet</label>
+        <input value={name} onChange={(e) => setName(e.target.value)} />
+
+        <label>Phase</label>
+        <select value={stage} onChange={(e) => setStage(e.target.value)}>
+          <option value="avant">Avant‑projet</option>
+          <option value="dev">Développement</option>
+          <option value="post">Post‑développement</option>
+        </select>
+
+        <label>Ressources</label>
+        <input value={resources} onChange={(e) => setResources(e.target.value)} />
+
+        <label>Date début</label>
+        <input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
+
+        <label>Date fin</label>
+        <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} />
+
+        <button onClick={addProject}>Ajouter projet</button>
+      </div>
+
+      {timeline.length > 0 && (
+        <>
+          <h2>📅 Échelle de temps</h2>
+          <div className="timeline">
+            {timeline.map((t, i) => (
+              <div className="month" key={i}>
+                {t}
+              </div>
+            ))}
+          </div>
+
+          <h2>📊 GANTT</h2>
+          <div className="gantt">
+            {projects.map((p, i) => {
+              const s = new Date(p.start);
+              const e = new Date(p.end);
+              const base = new Date(timeline[0]);
+
+              const monthOffset =
+                (s.getFullYear() - base.getFullYear()) * 12 +
+                (s.getMonth() - base.getMonth());
+
+              const duration =
+                (e.getFullYear() - s.getFullYear()) * 12 +
+                (e.getMonth() - s.getMonth()) +
+                1;
+
+              return (
+                <div key={i} className="row">
+                  <div className="label">{p.name}</div>
+                  <div
+                    className="bar"
+                    style={{
+                      marginLeft: `${monthOffset * 120}px`,
+                      width: `${duration * 120}px`,
+                    }}
+                  ></div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
