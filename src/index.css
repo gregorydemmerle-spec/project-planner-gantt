@@ -54,3 +54,9 @@ button {
   background: #0070f3;
   border-radius: 4px;
 }
+
+input, select, button {
+  height: 42px;       /* augmente la hauteur */
+  font-size: 16px;    /* texte plus lisible */
+  padding: 6px 10px;  /* plus confortable */
+}
